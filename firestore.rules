@@ -1,0 +1,95 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return isAuthenticated() && request.auth.token.email == 'ganukalp70@gmail.com';
+    }
+    
+    // Helper function to check if user owns the document
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Users collection
+    // - Users can read their own document
+    // - Admin can read ALL users (for analytics)
+    // - Users can only write their own document
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // Allow admin to list/query all users
+    match /users/{document=**} {
+      allow list: if isAdmin();
+    }
+    
+    // Exams collection
+    // - Anyone authenticated can read exams
+    // - Only admin can create, update, delete exams
+    match /exams/{examId} {
+      allow read: if isAuthenticated();
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+      
+      // Questions subcollection
+      match /questions/{questionId} {
+        allow read: if isAuthenticated();
+        allow create: if isAdmin();
+        allow update: if isAdmin();
+        allow delete: if isAdmin();
+      }
+    }
+    
+    // ExamResults collection (your existing collection)
+    // - Users can read their own results
+    // - Admin can read all results
+    // - Users can only create results for themselves
+    match /examResults/{resultId} {
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid || isAdmin()
+      );
+      allow create: if isAuthenticated() && 
+        request.resource.data.userId == request.auth.uid;
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // Allow admin to list/query all examResults
+    match /examResults/{document=**} {
+      allow list: if isAdmin();
+    }
+    
+    // Legacy results collection (if any)
+    match /results/{resultId} {
+      allow read: if isAuthenticated() && (
+        resource.data.uid == request.auth.uid || isAdmin()
+      );
+      allow create: if isAuthenticated() && 
+        request.resource.data.uid == request.auth.uid;
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+    
+    // Doubts collection for student queries
+    match /doubts/{doubtId} {
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid || isAdmin()
+      );
+      allow create: if isAuthenticated() && 
+        request.resource.data.userId == request.auth.uid;
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+  }
+}

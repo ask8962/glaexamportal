@@ -15,6 +15,15 @@ const adminRoutes = ['/admin'];
 
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
+    const hostname = request.headers.get('host') || '';
+
+    // Subdomain Routing for Job Portal
+    // Handle job.glaexamportal.site or job.localhost
+    if (hostname.startsWith('job.')) {
+        const url = request.nextUrl.clone();
+        url.pathname = `/jobs${pathname}`;
+        return NextResponse.rewrite(url);
+    }
 
     // Get auth token from cookie
     const authToken = request.cookies.get('auth-token')?.value;

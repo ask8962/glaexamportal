@@ -1,68 +1,53 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useTheme, ThemeToggle } from '@/contexts/ThemeContext';
-
-// Mock Data
-const MOCK_JOBS = [
-    {
-        id: 1,
-        title: 'Frontend Developer',
-        company: 'TechCorp Solutions',
-        location: 'Remote',
-        type: 'Full-time',
-        salary: '$80k - $120k',
-        tags: ['React', 'Next.js', 'Tailwind'],
-        posted: '2 days ago',
-        logo: 'TC'
-    },
-    {
-        id: 2,
-        title: 'Product Designer',
-        company: 'Creative Studio',
-        location: 'New York, NY',
-        type: 'Full-time',
-        salary: '$90k - $130k',
-        tags: ['Figma', 'UI/UX', 'Mobile'],
-        posted: '4 hours ago',
-        logo: 'CS'
-    },
-    {
-        id: 3,
-        title: 'Backend Intern',
-        company: 'StartUp Inc',
-        location: 'Bangalore, IN',
-        type: 'Internship',
-        salary: '₹25k/month',
-        tags: ['Node.js', 'Python', 'SQL'],
-        posted: '1 day ago',
-        logo: 'SI'
-    },
-    {
-        id: 4,
-        title: 'DevOps Engineer',
-        company: 'CloudSystems',
-        location: 'Remote',
-        type: 'Contract',
-        salary: '$60/hr',
-        tags: ['AWS', 'Docker', 'K8s'],
-        posted: '3 days ago',
-        logo: 'CS'
-    }
-];
+import { getJobs, formatTimestamp } from '@/lib/db';
+import { Job } from '@/types';
+import { showToast } from '@/components/ui/Toast';
 
 export default function JobPortalPage() {
     const { theme } = useTheme();
     const isDark = theme === 'dark';
+    const [jobs, setJobs] = useState<Job[]>([]);
+    const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedType, setSelectedType] = useState('All');
 
-    const filteredJobs = MOCK_JOBS.filter(job =>
+    useEffect(() => {
+        loadJobs();
+    }, []);
+
+    const loadJobs = async () => {
+        try {
+            const data = await getJobs();
+            setJobs(data);
+        } catch (error) {
+            console.error('Error loading jobs:', error);
+            showToast.error('Failed to load jobs');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const filteredJobs = jobs.filter(job =>
         (selectedType === 'All' || job.type === selectedType) &&
         (job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            job.company.toLowerCase().includes(searchQuery.toLowerCase()))
+            job.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            job.location.toLowerCase().includes(searchQuery.toLowerCase()))
     );
+
+    const getTimeAgo = (timestamp: any) => {
+        if (!timestamp) return 'Recently';
+        const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+        const now = new Date();
+        const diff = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+        if (diff < 1) return 'Just now';
+        if (diff < 24) return `${diff}h ago`;
+        const days = Math.floor(diff / 24);
+        return `${days}d ago`;
+    };
 
     return (
         <div className={`min-h-screen font-sans transition-colors duration-300 ${isDark ? 'bg-[#050505] text-white' : 'bg-gray-50 text-gray-900'}`}>
@@ -80,9 +65,6 @@ export default function JobPortalPage() {
                         <Link href="https://glaexamportal.site" className={`text-sm font-medium ${isDark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-black'}`}>
                             Back to Portal
                         </Link>
-                        <button className="px-4 py-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition-colors">
-                            Post a Job
-                        </button>
                     </div>
                 </div>
             </header>
@@ -94,7 +76,7 @@ export default function JobPortalPage() {
                         Find your next <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-violet-500">dream job</span>
                     </h1>
                     <p className={`text-lg mb-10 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                        Browse thousands of job openings from top companies and startups.
+                        Browse job openings from top companies and startups.
                     </p>
 
                     {/* Search Bar */}
@@ -143,59 +125,77 @@ export default function JobPortalPage() {
                 <div className="flex-1 space-y-4">
                     <div className="flex items-center justify-between mb-2">
                         <span className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                            Showing {filteredJobs.length} results
+                            {loading ? 'Loading...' : `Showing ${filteredJobs.length} results`}
                         </span>
                     </div>
 
-                    {filteredJobs.map(job => (
-                        <div key={job.id} className={`group relative p-6 rounded-2xl border transition-all duration-300 hover:scale-[1.01] cursor-pointer ${isDark ? 'bg-white/5 border-white/5 hover:border-white/10 hover:bg-white/10' : 'bg-white border-gray-100 hover:border-blue-200 hover:shadow-lg'}`}>
-                            <div className="flex items-start gap-4">
-                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-lg font-bold shadow-sm ${isDark ? 'bg-white/10 text-white' : 'bg-gray-100 text-gray-700'}`}>
-                                    {job.logo}
-                                </div>
-                                <div className="flex-1">
-                                    <div className="flex items-start justify-between">
-                                        <div>
-                                            <h3 className={`text-lg font-semibold mb-1 group-hover:text-blue-500 transition-colors ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                                                {job.title}
-                                            </h3>
-                                            <p className={`text-sm mb-3 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                                                {job.company} • {job.location}
-                                            </p>
+                    {loading ? (
+                        <div className="space-y-4">
+                            {[1, 2, 3].map(i => (
+                                <div key={i} className={`h-32 rounded-2xl animate-pulse ${isDark ? 'bg-white/5' : 'bg-gray-200'}`} />
+                            ))}
+                        </div>
+                    ) : filteredJobs.length === 0 ? (
+                        <div className={`text-center py-20 rounded-2xl border ${isDark ? 'bg-white/5 border-white/10' : 'bg-white border-gray-200'}`}>
+                            <div className="text-4xl mb-4">💼</div>
+                            <h3 className={`text-xl font-semibold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>No Jobs Found</h3>
+                            <p className={isDark ? 'text-gray-500' : 'text-gray-600'}>Check back later for new opportunities.</p>
+                        </div>
+                    ) : (
+                        filteredJobs.map(job => (
+                            <div key={job.id} className={`group relative p-6 rounded-2xl border transition-all duration-300 hover:scale-[1.01] cursor-pointer ${isDark ? 'bg-white/5 border-white/5 hover:border-white/10 hover:bg-white/10' : 'bg-white border-gray-100 hover:border-blue-200 hover:shadow-lg'}`}>
+                                <div className="flex items-start gap-4">
+                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-lg font-bold shadow-sm ${isDark ? 'bg-white/10 text-white' : 'bg-gray-100 text-gray-700'}`}>
+                                        {job.logo || job.company.substring(0, 2).toUpperCase()}
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className="flex items-start justify-between">
+                                            <div>
+                                                <h3 className={`text-lg font-semibold mb-1 group-hover:text-blue-500 transition-colors ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                                                    {job.title}
+                                                </h3>
+                                                <p className={`text-sm mb-3 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                    {job.company} • {job.location} • {job.locationType}
+                                                </p>
+                                            </div>
+                                            <span className={`px-3 py-1 rounded-full text-xs font-medium border ${job.type === 'Internship' ? 'bg-purple-500/10 text-purple-500 border-purple-500/20' :
+                                                    job.type === 'Full-time' ? 'bg-green-500/10 text-green-500 border-green-500/20' :
+                                                        job.type === 'Contract' ? 'bg-orange-500/10 text-orange-500 border-orange-500/20' :
+                                                            'bg-blue-500/10 text-blue-500 border-blue-500/20'
+                                                }`}>
+                                                {job.type}
+                                            </span>
                                         </div>
-                                        {job.type === 'Internship' && (
-                                            <span className="px-3 py-1 rounded-full text-xs font-medium bg-purple-500/10 text-purple-500 border border-purple-500/20">
-                                                Internship
+                                        <div className="flex items-center flex-wrap gap-2 mt-2">
+                                            {job.tags?.map(tag => (
+                                                <span key={tag} className={`px-2.5 py-0.5 rounded-md text-[11px] font-medium border ${isDark ? 'bg-white/5 border-white/10 text-gray-300' : 'bg-gray-50 border-gray-200 text-gray-600'}`}>
+                                                    {tag}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="text-right flex flex-col items-end gap-2">
+                                        {job.salary && (
+                                            <span className={`text-sm font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                                                {job.salary}
                                             </span>
                                         )}
-                                        {job.type === 'Full-time' && (
-                                            <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-500/10 text-green-500 border border-green-500/20">
-                                                Full-time
-                                            </span>
-                                        )}
+                                        <span className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
+                                            {getTimeAgo(job.createdAt)}
+                                        </span>
+                                        <a
+                                            href={job.applyLink}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="mt-2 px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity hover:bg-blue-700"
+                                        >
+                                            Apply Now
+                                        </a>
                                     </div>
-                                    <div className="flex items-center flex-wrap gap-2 mt-2">
-                                        {job.tags.map(tag => (
-                                            <span key={tag} className={`px-2.5 py-0.5 rounded-md text-[11px] font-medium border ${isDark ? 'bg-white/5 border-white/10 text-gray-300' : 'bg-gray-50 border-gray-200 text-gray-600'}`}>
-                                                {tag}
-                                            </span>
-                                        ))}
-                                    </div>
-                                </div>
-                                <div className="text-right flex flex-col items-end gap-2">
-                                    <span className={`text-sm font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                                        {job.salary}
-                                    </span>
-                                    <span className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
-                                        {job.posted}
-                                    </span>
-                                    <button className="mt-2 px-4 py-2 rounded-lg bg-white text-black text-sm font-medium border border-gray-200 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-gray-50">
-                                        Apply Now
-                                    </button>
                                 </div>
                             </div>
-                        </div>
-                    ))}
+                        ))
+                    )}
                 </div>
             </main>
         </div>

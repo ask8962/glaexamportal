@@ -91,5 +91,15 @@ service cloud.firestore {
       allow update: if isAdmin();
       allow delete: if isAdmin();
     }
+    
+    // Jobs collection for Job Portal
+    // - Anyone can read active jobs
+    // - Only admin can create, update, delete
+    match /jobs/{jobId} {
+      allow read: if true; // Public read for job portal
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
   }
 }

@@ -23,6 +23,8 @@ import {
     Result,
     User,
     AdminAnalytics,
+    Job,
+    JobFormData,
 } from '@/types';
 
 // ============ EXAM OPERATIONS ============
@@ -411,4 +413,67 @@ export const calculatePercentage = (score: number | undefined | null, total: num
     const safeTotal = typeof total === 'number' ? total : 0;
     if (safeTotal === 0) return 0;
     return Math.round((safeScore / safeTotal) * 100);
+};
+
+// ============ JOB OPERATIONS ============
+
+// Get all active jobs (for public job portal)
+export const getJobs = async (): Promise<Job[]> => {
+    const jobsRef = collection(db, 'jobs');
+    const q = query(jobsRef, where('isActive', '==', true), orderBy('createdAt', 'desc'));
+    const snapshot = await getDocs(q);
+
+    return snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+    })) as Job[];
+};
+
+// Get all jobs (for admin, including inactive)
+export const getAllJobs = async (): Promise<Job[]> => {
+    const jobsRef = collection(db, 'jobs');
+    const q = query(jobsRef, orderBy('createdAt', 'desc'));
+    const snapshot = await getDocs(q);
+
+    return snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+    })) as Job[];
+};
+
+// Get single job by ID
+export const getJobById = async (jobId: string): Promise<Job | null> => {
+    const jobRef = doc(db, 'jobs', jobId);
+    const jobSnap = await getDoc(jobRef);
+
+    if (jobSnap.exists()) {
+        return { id: jobSnap.id, ...jobSnap.data() } as Job;
+    }
+    return null;
+};
+
+// Create new job
+export const createJob = async (jobData: JobFormData): Promise<string> => {
+    const jobsRef = collection(db, 'jobs');
+    const docRef = await addDoc(jobsRef, {
+        ...jobData,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+    });
+    return docRef.id;
+};
+
+// Update job
+export const updateJob = async (jobId: string, jobData: Partial<JobFormData>): Promise<void> => {
+    const jobRef = doc(db, 'jobs', jobId);
+    await updateDoc(jobRef, {
+        ...jobData,
+        updatedAt: serverTimestamp(),
+    });
+};
+
+// Delete job
+export const deleteJob = async (jobId: string): Promise<void> => {
+    const jobRef = doc(db, 'jobs', jobId);
+    await deleteDoc(jobRef);
 };

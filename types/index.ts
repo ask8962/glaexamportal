@@ -152,3 +152,35 @@ export interface FilterOptions {
     endDate?: Date;
     searchQuery?: string;
 }
+
+// Job Portal types
+export interface Job {
+    id: string;
+    title: string;
+    company: string;
+    location: string;
+    locationType: 'Remote' | 'Onsite' | 'Hybrid';
+    type: 'Full-time' | 'Part-time' | 'Internship' | 'Contract';
+    salary?: string;
+    description: string;
+    tags: string[];
+    applyLink: string;
+    logo?: string;
+    isActive: boolean;
+    createdAt: Timestamp;
+    updatedAt: Timestamp;
+}
+
+export interface JobFormData {
+    title: string;
+    company: string;
+    location: string;
+    locationType: 'Remote' | 'Onsite' | 'Hybrid';
+    type: 'Full-time' | 'Part-time' | 'Internship' | 'Contract';
+    salary?: string;
+    description: string;
+    tags: string[];
+    applyLink: string;
+    logo?: string;
+    isActive: boolean;
+}

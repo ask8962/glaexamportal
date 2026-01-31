@@ -13,9 +13,55 @@ const authRoutes = ['/login', '/register'];
 // Admin-only routes
 const adminRoutes = ['/admin'];
 
+// ============ RATE LIMITING ============
+// Simple in-memory rate limiter (resets on server restart)
+// For production, use Redis or a proper rate limiting service
+const rateLimitMap = new Map<string, { count: number; timestamp: number }>();
+const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
+const RATE_LIMIT_MAX_REQUESTS = 100; // Max requests per window
+
+function isRateLimited(ip: string): boolean {
+    const now = Date.now();
+    const record = rateLimitMap.get(ip);
+
+    if (!record) {
+        rateLimitMap.set(ip, { count: 1, timestamp: now });
+        return false;
+    }
+
+    // Reset window if expired
+    if (now - record.timestamp > RATE_LIMIT_WINDOW) {
+        rateLimitMap.set(ip, { count: 1, timestamp: now });
+        return false;
+    }
+
+    // Increment and check
+    record.count++;
+    if (record.count > RATE_LIMIT_MAX_REQUESTS) {
+        return true;
+    }
+
+    return false;
+}
+
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
     const hostname = request.headers.get('host') || '';
+
+    // Get client IP for rate limiting
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0] ||
+        request.headers.get('x-real-ip') ||
+        'anonymous';
+
+    // Apply rate limiting (skip for static assets)
+    if (!pathname.startsWith('/_next') && !pathname.includes('.')) {
+        if (isRateLimited(ip)) {
+            return new NextResponse('Too Many Requests', {
+                status: 429,
+                headers: { 'Retry-After': '60' }
+            });
+        }
+    }
 
     // Subdomain Routing for Job Portal
     // Handle job.glaexamportal.site or job.localhost

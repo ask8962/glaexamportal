@@ -94,7 +94,7 @@ export default function ClassicTemplate({ data }: TemplateProps) {
                         <div className="space-y-4">
                             {education.map(edu => (
                                 <div key={edu.id}>
-                                    <div className="font-bold text-sm">{edu.title || edu.degree}</div>
+                                    <div className="font-bold text-sm">{edu.degree}</div>
                                     <div className="text-sm italic">{edu.institution}</div>
                                     <div className="text-xs mt-1" style={{ color: colors.textLight }}>{edu.startDate} – {edu.endDate}</div>
                                 </div>

@@ -533,3 +533,61 @@ export const updateApplicationStatus = async (
     const appRef = doc(db, 'jobApplications', applicationId);
     await updateDoc(appRef, { status });
 };
+
+// ============ RESUME OPERATIONS ============
+
+import { Resume, ResumeFormData } from '@/types';
+
+// Save resume (create or update)
+export const saveResume = async (userId: string, resumeData: ResumeFormData, resumeId?: string): Promise<string> => {
+    if (resumeId) {
+        // Update existing
+        const resumeRef = doc(db, 'resumes', resumeId);
+        await updateDoc(resumeRef, {
+            ...resumeData,
+            updatedAt: serverTimestamp(),
+        });
+        return resumeId;
+    } else {
+        // Create new
+        const resumesRef = collection(db, 'resumes');
+        const docRef = await addDoc(resumesRef, {
+            userId,
+            ...resumeData,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+        });
+        return docRef.id;
+    }
+};
+
+// Get user's resumes
+export const getUserResumes = async (userId: string): Promise<Resume[]> => {
+    const resumesRef = collection(db, 'resumes');
+    const q = query(resumesRef, where('userId', '==', userId), orderBy('updatedAt', 'desc'));
+    const snapshot = await getDocs(q);
+
+    return snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+    })) as Resume[];
+};
+
+// Get single resume by ID
+export const getResumeById = async (resumeId: string): Promise<Resume | null> => {
+    const resumeRef = doc(db, 'resumes', resumeId);
+    const snapshot = await getDoc(resumeRef);
+
+    if (!snapshot.exists()) return null;
+
+    return {
+        id: snapshot.id,
+        ...snapshot.data(),
+    } as Resume;
+};
+
+// Delete resume
+export const deleteResume = async (resumeId: string): Promise<void> => {
+    const resumeRef = doc(db, 'resumes', resumeId);
+    await deleteDoc(resumeRef);
+};

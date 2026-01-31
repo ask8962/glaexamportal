@@ -216,3 +216,72 @@ export interface JobApplicationFormData {
     linkedinUrl?: string;
     portfolioUrl?: string;
 }
+
+// ============ RESUME TYPES ============
+
+export interface ResumePersonalInfo {
+    fullName: string;
+    email: string;
+    phone: string;
+    location: string;
+    linkedin?: string;
+    github?: string;
+    portfolio?: string;
+    summary: string;
+}
+
+export interface ResumeEducation {
+    id: string;
+    institution: string;
+    degree: string;
+    field: string;
+    startDate: string;
+    endDate: string;
+    gpa?: string;
+    achievements?: string[];
+}
+
+export interface ResumeExperience {
+    id: string;
+    company: string;
+    position: string;
+    location: string;
+    startDate: string;
+    endDate: string;
+    current: boolean;
+    bullets: string[];
+}
+
+export interface ResumeProject {
+    id: string;
+    name: string;
+    description: string;
+    technologies: string[];
+    link?: string;
+    github?: string;
+}
+
+export interface Resume {
+    id: string;
+    userId: string;
+    title: string;
+    template: 'modern' | 'classic' | 'minimal';
+    personalInfo: ResumePersonalInfo;
+    education: ResumeEducation[];
+    experience: ResumeExperience[];
+    skills: string[];
+    projects: ResumeProject[];
+    createdAt: Timestamp;
+    updatedAt: Timestamp;
+}
+
+export interface ResumeFormData {
+    title: string;
+    template: 'modern' | 'classic' | 'minimal';
+    personalInfo: ResumePersonalInfo;
+    education: ResumeEducation[];
+    experience: ResumeExperience[];
+    skills: string[];
+    projects: ResumeProject[];
+}
+

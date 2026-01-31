@@ -74,6 +74,16 @@ export async function middleware(request: NextRequest) {
         }
     }
 
+    // Subdomain Routing for Resume Builder
+    // Handle resume.glaexamportal.site or resume.localhost
+    if (hostname.startsWith('resume.')) {
+        const url = request.nextUrl.clone();
+        if (!pathname.startsWith('/resume')) {
+            url.pathname = `/resume${pathname === '/' ? '' : pathname}`;
+            return NextResponse.rewrite(url);
+        }
+    }
+
     // Get auth token from cookie
     const authToken = request.cookies.get('auth-token')?.value;
 

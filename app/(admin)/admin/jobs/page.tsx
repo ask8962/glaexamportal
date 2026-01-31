@@ -306,17 +306,7 @@ export default function AdminJobsPage() {
                         />
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-medium mb-1">Apply Link *</label>
-                        <input
-                            type="url"
-                            required
-                            value={formData.applyLink}
-                            onChange={e => setFormData({ ...formData, applyLink: e.target.value })}
-                            placeholder="https://company.com/careers/apply"
-                            className={`w-full px-3 py-2 rounded-lg border ${isDark ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
-                        />
-                    </div>
+
 
                     <div>
                         <label className="block text-sm font-medium mb-1">Tags (Press Enter to add)</label>

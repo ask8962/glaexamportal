@@ -67,8 +67,11 @@ export async function middleware(request: NextRequest) {
     // Handle job.glaexamportal.site or job.localhost
     if (hostname.startsWith('job.')) {
         const url = request.nextUrl.clone();
-        url.pathname = `/jobs${pathname}`;
-        return NextResponse.rewrite(url);
+        // If already on /jobs path, don't add /jobs prefix again
+        if (!pathname.startsWith('/jobs')) {
+            url.pathname = `/jobs${pathname === '/' ? '' : pathname}`;
+            return NextResponse.rewrite(url);
+        }
     }
 
     // Get auth token from cookie

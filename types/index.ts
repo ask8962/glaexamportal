@@ -184,3 +184,35 @@ export interface JobFormData {
     logo?: string;
     isActive: boolean;
 }
+
+// Job Application types
+export interface JobApplication {
+    id: string;
+    jobId: string;
+    jobTitle: string;
+    company: string;
+    applicantName: string;
+    applicantEmail: string;
+    phone: string;
+    yearsOfExperience: number;
+    currentRole?: string;
+    skills: string[];
+    coverLetter?: string;
+    resumeUrl?: string;
+    linkedinUrl?: string;
+    portfolioUrl?: string;
+    status: 'pending' | 'reviewed' | 'shortlisted' | 'rejected';
+    appliedAt: Timestamp;
+}
+
+export interface JobApplicationFormData {
+    applicantName: string;
+    applicantEmail: string;
+    phone: string;
+    yearsOfExperience: number;
+    currentRole?: string;
+    skills: string[];
+    coverLetter?: string;
+    linkedinUrl?: string;
+    portfolioUrl?: string;
+}

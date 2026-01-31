@@ -477,3 +477,59 @@ export const deleteJob = async (jobId: string): Promise<void> => {
     const jobRef = doc(db, 'jobs', jobId);
     await deleteDoc(jobRef);
 };
+
+// ============ JOB APPLICATION OPERATIONS ============
+
+import { JobApplication, JobApplicationFormData } from '@/types';
+
+// Submit job application
+export const submitJobApplication = async (
+    jobId: string,
+    jobTitle: string,
+    company: string,
+    applicationData: JobApplicationFormData
+): Promise<string> => {
+    const applicationsRef = collection(db, 'jobApplications');
+    const docRef = await addDoc(applicationsRef, {
+        jobId,
+        jobTitle,
+        company,
+        ...applicationData,
+        status: 'pending',
+        appliedAt: serverTimestamp(),
+    });
+    return docRef.id;
+};
+
+// Get applications for a job (admin)
+export const getApplicationsForJob = async (jobId: string): Promise<JobApplication[]> => {
+    const applicationsRef = collection(db, 'jobApplications');
+    const q = query(applicationsRef, where('jobId', '==', jobId), orderBy('appliedAt', 'desc'));
+    const snapshot = await getDocs(q);
+
+    return snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+    })) as JobApplication[];
+};
+
+// Get all applications (admin)
+export const getAllApplications = async (): Promise<JobApplication[]> => {
+    const applicationsRef = collection(db, 'jobApplications');
+    const q = query(applicationsRef, orderBy('appliedAt', 'desc'));
+    const snapshot = await getDocs(q);
+
+    return snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+    })) as JobApplication[];
+};
+
+// Update application status
+export const updateApplicationStatus = async (
+    applicationId: string,
+    status: 'pending' | 'reviewed' | 'shortlisted' | 'rejected'
+): Promise<void> => {
+    const appRef = doc(db, 'jobApplications', applicationId);
+    await updateDoc(appRef, { status });
+};

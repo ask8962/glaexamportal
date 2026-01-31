@@ -7,12 +7,22 @@ interface TemplateProps {
 export default function ModernTemplate({ data }: TemplateProps) {
     const { personalInfo, experience, education, skills, projects } = data;
 
+    // Using inline styles for colors to avoid Tailwind V4 'lab' color issues with html2canvas
+    const colors = {
+        primary: '#4f46e5', // Indigo-600
+        secondary: '#4338ca', // Indigo-700
+        accent: '#eef2ff', // Indigo-50
+        text: '#111827', // Gray-900
+        textLight: '#4b5563', // Gray-600
+        border: '#e5e7eb', // Gray-200
+    };
+
     return (
-        <div className="w-full h-full bg-white text-gray-800 p-8 font-sans">
+        <div className="w-full h-full bg-white p-8 font-sans" style={{ color: colors.text }}>
             {/* Header */}
-            <div className="border-b-4 border-indigo-600 pb-6 mb-6">
-                <h1 className="text-4xl font-bold uppercase tracking-wider text-gray-900 mb-2">{personalInfo.fullName}</h1>
-                <div className="text-sm font-medium text-gray-600 flex flex-wrap gap-4">
+            <div className="border-b-4 pb-6 mb-6" style={{ borderColor: colors.primary }}>
+                <h1 className="text-4xl font-bold uppercase tracking-wider mb-2" style={{ color: colors.text }}>{personalInfo.fullName}</h1>
+                <div className="text-sm font-medium flex flex-wrap gap-4" style={{ color: colors.textLight }}>
                     {personalInfo.email && (
                         <div className="flex items-center gap-1">
                             <span>📧</span> {personalInfo.email}
@@ -39,7 +49,7 @@ export default function ModernTemplate({ data }: TemplateProps) {
             {/* Summary */}
             {personalInfo.summary && (
                 <div className="mb-6">
-                    <p className="text-gray-700 leading-relaxed text-sm">{personalInfo.summary}</p>
+                    <p className="leading-relaxed text-sm" style={{ color: '#374151' }}>{personalInfo.summary}</p>
                 </div>
             )}
 
@@ -49,20 +59,20 @@ export default function ModernTemplate({ data }: TemplateProps) {
                     {/* Experience */}
                     {experience.length > 0 && (
                         <section>
-                            <h3 className="text-lg font-bold uppercase tracking-wide border-b border-gray-200 pb-1 mb-3 text-indigo-700">Experience</h3>
+                            <h3 className="text-lg font-bold uppercase tracking-wide border-b pb-1 mb-3" style={{ color: colors.secondary, borderColor: colors.border }}>Experience</h3>
                             <div className="space-y-4">
                                 {experience.map(exp => (
                                     <div key={exp.id}>
                                         <div className="flex justify-between items-baseline mb-1">
-                                            <h4 className="font-bold text-gray-900">{exp.position}</h4>
-                                            <span className="text-xs font-medium text-gray-500 whitespace-nowrap">
+                                            <h4 className="font-bold" style={{ color: colors.text }}>{exp.position}</h4>
+                                            <span className="text-xs font-medium whitespace-nowrap" style={{ color: colors.textLight }}>
                                                 {exp.startDate} - {exp.endDate || 'Present'}
                                             </span>
                                         </div>
-                                        <div className="text-sm font-semibold text-indigo-600 mb-2">{exp.company} | {exp.location}</div>
+                                        <div className="text-sm font-semibold mb-2" style={{ color: colors.primary }}>{exp.company} | {exp.location}</div>
                                         <ul className="list-disc list-outside ml-4 space-y-1">
                                             {exp.bullets.map((bullet, i) => (
-                                                bullet && <li key={i} className="text-xs text-gray-700 leading-relaxed pl-1">{bullet}</li>
+                                                bullet && <li key={i} className="text-xs leading-relaxed pl-1" style={{ color: '#374151' }}>{bullet}</li>
                                             ))}
                                         </ul>
                                     </div>
@@ -74,18 +84,18 @@ export default function ModernTemplate({ data }: TemplateProps) {
                     {/* Projects */}
                     {projects.length > 0 && (
                         <section>
-                            <h3 className="text-lg font-bold uppercase tracking-wide border-b border-gray-200 pb-1 mb-3 text-indigo-700">Projects</h3>
+                            <h3 className="text-lg font-bold uppercase tracking-wide border-b pb-1 mb-3" style={{ color: colors.secondary, borderColor: colors.border }}>Projects</h3>
                             <div className="space-y-4">
                                 {projects.map(proj => (
                                     <div key={proj.id}>
-                                        <h4 className="font-bold text-gray-900 text-sm flex items-center gap-2">
+                                        <h4 className="font-bold text-sm flex items-center gap-2" style={{ color: colors.text }}>
                                             {proj.name}
-                                            {proj.link && <a href={proj.link} className="text-indigo-500 hover:underline text-xs">↗</a>}
+                                            {proj.link && <a href={proj.link} className="hover:underline text-xs" style={{ color: colors.primary }}>↗</a>}
                                         </h4>
-                                        <p className="text-xs text-gray-700 mt-1">{proj.description}</p>
+                                        <p className="text-xs mt-1" style={{ color: '#374151' }}>{proj.description}</p>
                                         <div className="flex gap-2 mt-1">
                                             {proj.technologies.map(tech => (
-                                                <span key={tech} className="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">{tech}</span>
+                                                <span key={tech} className="text-[10px] px-1.5 py-0.5 rounded" style={{ backgroundColor: '#f3f4f6', color: '#4b5563' }}>{tech}</span>
                                             ))}
                                         </div>
                                     </div>
@@ -100,13 +110,13 @@ export default function ModernTemplate({ data }: TemplateProps) {
                     {/* Education */}
                     {education.length > 0 && (
                         <section>
-                            <h3 className="text-lg font-bold uppercase tracking-wide border-b border-gray-200 pb-1 mb-3 text-indigo-700">Education</h3>
+                            <h3 className="text-lg font-bold uppercase tracking-wide border-b pb-1 mb-3" style={{ color: colors.secondary, borderColor: colors.border }}>Education</h3>
                             <div className="space-y-4">
                                 {education.map(edu => (
                                     <div key={edu.id}>
-                                        <div className="font-bold text-gray-900 text-sm">{edu.institution}</div>
-                                        <div className="text-xs text-indigo-600 font-medium mb-1">{edu.degree} in {edu.field}</div>
-                                        <div className="text-xs text-gray-500">{edu.startDate} - {edu.endDate}</div>
+                                        <div className="font-bold text-sm" style={{ color: colors.text }}>{edu.institution}</div>
+                                        <div className="text-xs font-medium mb-1" style={{ color: colors.primary }}>{edu.degree} in {edu.field}</div>
+                                        <div className="text-xs" style={{ color: colors.textLight }}>{edu.startDate} - {edu.endDate}</div>
                                     </div>
                                 ))}
                             </div>
@@ -116,10 +126,10 @@ export default function ModernTemplate({ data }: TemplateProps) {
                     {/* Skills */}
                     {skills.length > 0 && (
                         <section>
-                            <h3 className="text-lg font-bold uppercase tracking-wide border-b border-gray-200 pb-1 mb-3 text-indigo-700">Skills</h3>
+                            <h3 className="text-lg font-bold uppercase tracking-wide border-b pb-1 mb-3" style={{ color: colors.secondary, borderColor: colors.border }}>Skills</h3>
                             <div className="flex flex-wrap gap-2">
                                 {skills.map(skill => (
-                                    <span key={skill} className="text-xs font-medium bg-indigo-50 text-indigo-700 px-2 py-1 rounded">
+                                    <span key={skill} className="text-xs font-medium px-2 py-1 rounded" style={{ backgroundColor: colors.accent, color: colors.secondary }}>
                                         {skill}
                                     </span>
                                 ))}

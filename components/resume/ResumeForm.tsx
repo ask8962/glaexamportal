@@ -84,6 +84,28 @@ export default function ResumeForm({ data, onChange }: ResumeFormProps) {
         onChange({ ...data, skills: data.skills.filter(s => s !== skill) });
     };
 
+    const addProject = () => {
+        const newProj: ResumeProject = {
+            id: Date.now().toString(),
+            name: '',
+            description: '',
+            technologies: [],
+            link: '',
+        };
+        onChange({ ...data, projects: [...data.projects, newProj] });
+    };
+
+    const updateProject = (id: string, field: keyof ResumeProject, value: any) => {
+        onChange({
+            ...data,
+            projects: data.projects.map(proj => proj.id === id ? { ...proj, [field]: value } : proj)
+        });
+    };
+
+    const removeProject = (id: string) => {
+        onChange({ ...data, projects: data.projects.filter(proj => proj.id !== id) });
+    };
+
     return (
         <div className="space-y-8 pb-20">
             {/* Template Selection */}
@@ -95,8 +117,8 @@ export default function ResumeForm({ data, onChange }: ResumeFormProps) {
                             key={t}
                             onClick={() => onChange({ ...data, template: t as any })}
                             className={`p-3 rounded-xl border-2 transition-all text-sm font-medium capitalize ${data.template === t
-                                    ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400'
-                                    : isDark ? 'border-gray-700 hover:border-gray-600 text-gray-400' : 'border-gray-200 hover:border-gray-300 text-gray-600'
+                                ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400'
+                                : isDark ? 'border-gray-700 hover:border-gray-600 text-gray-400' : 'border-gray-200 hover:border-gray-300 text-gray-600'
                                 }`}
                         >
                             {t}
@@ -292,6 +314,56 @@ export default function ResumeForm({ data, onChange }: ResumeFormProps) {
                                     className={`w-full p-2 rounded-lg border ${isDark ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-300'}`}
                                 />
                             </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+
+            {/* Projects */}
+            <div className={`p-6 rounded-2xl border ${isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'}`}>
+                <div className="flex items-center justify-between mb-4">
+                    <h3 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Projects & Hackathons</h3>
+                    <button onClick={addProject} className="text-sm text-indigo-500 font-medium hover:underline">+ Add Project</button>
+                </div>
+                <div className="space-y-6">
+                    {data.projects.map((proj) => (
+                        <div key={proj.id} className={`p-4 rounded-xl border ${isDark ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-50 border-gray-200'}`}>
+                            <div className="flex justify-end mb-2">
+                                <button onClick={() => removeProject(proj.id)} className="text-red-500 hover:text-red-600 text-sm">Remove</button>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <input
+                                    type="text"
+                                    placeholder="Project Name"
+                                    value={proj.name}
+                                    onChange={e => updateProject(proj.id, 'name', e.target.value)}
+                                    className={`w-full p-2 rounded-lg border ${isDark ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-300'}`}
+                                />
+                                <input
+                                    type="text"
+                                    placeholder="Link (Optional)"
+                                    value={proj.link || ''}
+                                    onChange={e => updateProject(proj.id, 'link', e.target.value)}
+                                    className={`w-full p-2 rounded-lg border ${isDark ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-300'}`}
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <input
+                                    type="text"
+                                    placeholder="Technologies Used (e.g., React, Firebase, Tailwind)"
+                                    value={proj.technologies.join(', ')}
+                                    onChange={e => updateProject(proj.id, 'technologies', e.target.value.split(',').map(t => t.trim()).filter(Boolean))}
+                                    className={`w-full p-2 rounded-lg border ${isDark ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-300'}`}
+                                />
+                            </div>
+                            <textarea
+                                rows={3}
+                                placeholder="Description (What did you build? What was the impact?)"
+                                value={proj.description}
+                                onChange={e => updateProject(proj.id, 'description', e.target.value)}
+                                className={`w-full p-2 rounded-lg border ${isDark ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-300'}`}
+                            />
                         </div>
                     ))}
                 </div>
